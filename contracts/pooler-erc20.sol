@@ -6,13 +6,15 @@ import "@openzeppelin/contracts/access/Ownable.sol";
 
 contract PoolerERC20 is ERC20, Ownable {
     address usdc;
-    address bridge;
+    address gateway;
 
     uint256 feeRate = 25; // 0.25% fee
     uint256 feeBucket;
 
     uint256 currentEpoch;
     bool rideOngoing;
+
+    address driver;
 
     uint256 public totalAmountToDeposit;
     mapping(address => uint256) depositsWaiting;
@@ -22,9 +24,9 @@ contract PoolerERC20 is ERC20, Ownable {
     mapping(address => uint256) withdrawsWaiting;
     address[] withdrawQueue;
 
-    constructor(address _usdc, address _bridge) ERC20("pooled USDC", "pUSDC") {
+    constructor(address _usdc, address _gateway) ERC20("pooled USDC", "pUSDC") {
         usdc = _usdc;
-        bridge = _bridge;
+        gateway = _gateway;
     }
 
     modifier notDuringRide() {
@@ -89,29 +91,30 @@ contract PoolerERC20 is ERC20, Ownable {
         delete withdrawsWaiting[msg.sender];
     }
 
-    function launchBus(uint256 gasLimit) public notDuringRide {
+    function launchBus(uint256 gasLimitForL1Tx) public notDuringRide {
         require(
             totalAmountToDeposit > 0 || totalAmountToWithdraw > 0,
             "No deposits or withdraw to launch bus with"
         );
         rideOngoing = true;
+        driver = msg.sender
 
-        // approve bridge
-        _sendRequestToBridge(
+        // approve gateway
+        IGateway(gateway)._sendRequestToBridge(
             totalAmountToDeposit,
             totalAmountToWithdraw,
-            gasLimit
+            gasLimitForL1Tx
         );
     }
 
-    function bridgeCallBack(
+    function gatewayCallBack(
         uint256 currentPrice,
         uint256 amountWithdrawn
     ) public {
-        require(msg.sender == bridge, "Only bridge can call this function");
+        require(msg.sender == gateway, "Only gateway can call this function");
         require(rideOngoing == true, "No ride in progress");
 
-        // convert Deposits into pUSDC with currentPrice
+        // convert deposits into pUSDC with currentPrice
         for (uint i = 0; i < depositQueue.length; i++) {
             address user = depositQueue[i];
             uint256 amount = depositsWaiting[user];
