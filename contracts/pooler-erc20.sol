@@ -22,10 +22,7 @@ contract PoolerERC20 is ERC20, Ownable {
     mapping(address => uint256) withdrawsWaiting;
     address[] withdrawQueue;
 
-    constructor(
-        address _usdc,
-        address _bridge
-    ) ERC20("bangr pooled fUSDC", "bpfUSDC") {
+    constructor(address _usdc, address _bridge) ERC20("pooled USDC", "pUSDC") {
         usdc = _usdc;
         bridge = _bridge;
     }
@@ -36,28 +33,28 @@ contract PoolerERC20 is ERC20, Ownable {
     }
 
     function deposit(uint256 amount) public notDuringRide {
-        transferFrom(msg.sender, address(this), amount);
-
-        fee = (amount * feeRate) / 10000;
+        uint256 fee = (amount * feeRate) / 10000;
         feeBucket += fee;
 
         depositsWaiting[msg.sender] = amount - fee;
         totalAmountToDeposit += amount - fee;
         depositQueue.push(msg.sender);
+
+        IERC20(usdc).transferFrom(msg.sender, address(this), amount);
     }
 
     function cancelDeposit() public notDuringRide {
-        uint256 deposit = depositsWaiting[msg.sender];
+        uint256 depositAmount = depositsWaiting[msg.sender];
 
-        require(deposit > 0, "No deposit ticket found");
+        require(depositAmount > 0, "No deposit ticket found");
 
-        originalAmount = deposit / (1 - feeRate / 10000);
-        fee = originalAmount - deposit;
+        uint256 originalAmount = depositAmount / (1 - feeRate / 10000);
+        uint256 fee = originalAmount - depositAmount;
 
         feeBucket -= fee;
-        totalAmountToDeposit -= deposit;
+        totalAmountToDeposit -= depositAmount;
 
-        transfer(msg.sender, originalAmount);
+        IERC20(usdc).transfer(msg.sender, originalAmount);
         delete depositsWaiting[msg.sender];
     }
 
@@ -67,7 +64,7 @@ contract PoolerERC20 is ERC20, Ownable {
         require(position > 0, "No position found");
         require(position >= amount, "Cannot withdraw more than position");
 
-        fee = (amount * feeRate) / 10000;
+        uint256 fee = (amount * feeRate) / 10000;
         feeBucket += fee;
 
         withdrawsWaiting[msg.sender] = amount - fee;
@@ -78,15 +75,15 @@ contract PoolerERC20 is ERC20, Ownable {
     }
 
     function cancelWithdraw() public notDuringRide {
-        uint256 withdraw = withdrawsWaiting[msg.sender];
+        uint256 withdrawAmount = withdrawsWaiting[msg.sender];
 
-        require(withdraw > 0, "No deposit ticket found");
+        require(withdrawAmount > 0, "No deposit ticket found");
 
-        originalAmount = withdraw / (1 - feeRate / 10000);
-        fee = originalAmount - withdraw;
+        uint256 originalAmount = withdrawAmount / (1 - feeRate / 10000);
+        uint256 fee = originalAmount - withdrawAmount;
 
         feeBucket -= fee;
-        totalAmountToWithdraw -= withdraw;
+        totalAmountToWithdraw -= withdrawAmount;
 
         _mint(msg.sender, originalAmount);
         delete withdrawsWaiting[msg.sender];
@@ -103,7 +100,6 @@ contract PoolerERC20 is ERC20, Ownable {
         _sendRequestToBridge(
             totalAmountToDeposit,
             totalAmountToWithdraw,
-            feeBucket,
             gasLimit
         );
     }
@@ -115,8 +111,8 @@ contract PoolerERC20 is ERC20, Ownable {
         require(msg.sender == bridge, "Only bridge can call this function");
         require(rideOngoing == true, "No ride in progress");
 
-        // convert Deposits into bpfUSDC with currentPrice
-        for (i = 0; i < depositQueue.length; i++) {
+        // convert Deposits into pUSDC with currentPrice
+        for (uint i = 0; i < depositQueue.length; i++) {
             address user = depositQueue[i];
             uint256 amount = depositsWaiting[user];
             _mint(user, amount / currentPrice);
@@ -127,8 +123,23 @@ contract PoolerERC20 is ERC20, Ownable {
         totalAmountToDeposit = 0;
 
         //distribute withdraws according to withdrawQueue
+        for (uint i = 0; i < withdrawQueue.length; i++) {
+            address user = withdrawQueue[i];
+            uint256 amount = withdrawsWaiting[user];
+            // transfer(user, amount)
+
+            _mint(user, amount / currentPrice);
+            delete withdrawsWaiting[user];
+        }
+        delete withdrawQueue;
         totalAmountToWithdraw = 0;
 
         rideOngoing = false;
     }
+
+    function _sendRequestToBridge(
+        uint256 amountToDeposit,
+        uint256 amountToWithdraw,
+        uint256 gasLimit
+    ) internal {}
 }
