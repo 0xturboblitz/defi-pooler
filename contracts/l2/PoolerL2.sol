@@ -11,9 +11,7 @@ contract PoolerERC20 is ERC20, Ownable {
     uint256 feeRate = 25; // 0.25% fee
     uint256 feeBucket;
 
-    uint256 currentEpoch;
     bool rideOngoing;
-
     address driver;
 
     uint256 public totalAmountToDeposit;
@@ -100,7 +98,7 @@ contract PoolerERC20 is ERC20, Ownable {
         driver = msg.sender
 
         // approve gateway
-        IGateway(gateway)._sendRequestToBridge(
+        IGateway(gateway).sendRequestToBridge(
             totalAmountToDeposit,
             totalAmountToWithdraw,
             gasLimitForL1Tx
@@ -139,10 +137,4 @@ contract PoolerERC20 is ERC20, Ownable {
 
         rideOngoing = false;
     }
-
-    function _sendRequestToBridge(
-        uint256 amountToDeposit,
-        uint256 amountToWithdraw,
-        uint256 gasLimit
-    ) internal {}
 }
