@@ -17,7 +17,6 @@ contract GateL2 is IAxelarExecutable, Ownable {
     constructor(
         address axelarGateway,
         string memory _destinationChain,
-        string memory _l1GateAddress,
         string memory _symbol,
         address _iTokenAddress,
         address _pTokenAddress,
@@ -25,7 +24,6 @@ contract GateL2 is IAxelarExecutable, Ownable {
     ) IAxelarExecutable(axelarGateway) {
         pooler = _pooler;
         destinationChain = _destinationChain;
-        l1GateAddress = _l1GateAddress;
         symbol = _symbol;
         iTokenAddress = _iTokenAddress;
         pTokenAddress = _pTokenAddress;

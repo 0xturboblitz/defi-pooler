@@ -26,12 +26,8 @@ contract PoolerL2 is ERC20, Ownable {
     mapping(address => uint256) public withdrawsWaiting;
     address[] public withdrawQueue;
 
-    constructor(
-        address _usdc,
-        address _gateAddress
-    ) ERC20("pooled USDC", "pUSDC") {
+    constructor(address _usdc) ERC20("pooled USDC", "pUSDC") {
         usdc = _usdc;
-        gateAddress = _gateAddress;
         _mint(msg.sender, 10000000000); //Only for testing purposes
         _mint(0x70997970C51812dc3A010C7d01b50e0d17dc79C8, 10000000000); //Only for testing purposes
     }
