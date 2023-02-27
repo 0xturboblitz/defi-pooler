@@ -10,7 +10,7 @@ contract GateL2  {
     string public l1GateAddress ;
     string public symbol;
     address public iTokenAddress;
-    address public pTokenAddre
+    address public pTokenAddress;
 
     constructor(address axelarGate, string memory destinationChain, string memory destinationGateAddreaa, string memory symbol){
         this.axelarGate = axelarGate;
@@ -33,3 +33,4 @@ contract GateL2  {
     function getITokensToInvest() public view returns(uint256){
         return IERC20(iTokenAddress).balanceOf(address(this));
     }
+}
