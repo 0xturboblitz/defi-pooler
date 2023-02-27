@@ -4,27 +4,34 @@ pragma solidity ^0.8.9;
 import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 
+import "hardhat/console.sol";
+
 contract PoolerL2 is ERC20, Ownable {
-    address usdc;
-    address gateway;
+    address public usdc;
+    address public gateway;
 
-    uint256 feeRate = 25; // 0.25% fee
-    uint256 feeBucket;
+    uint256 public feeRate = 50; // 0.50% fee
+    uint256 public feeBucket;
 
-    bool rideOngoing;
-    address driver;
+    bool public rideOngoing;
+    address public driver;
 
-    uint256 public totalAmountToDeposit;
-    mapping(address => uint256) depositsWaiting;
-    address[] depositQueue;
+    uint256 public totalAmountToDeposit; //in USDC, 6 decimals
+    mapping(address => uint256) public depositsWaiting;
+    address[] public depositQueue;
 
-    uint256 public totalAmountToWithdraw;
-    mapping(address => uint256) withdrawsWaiting;
-    address[] withdrawQueue;
+    uint256 public totalAmountToWithdraw; //in pUSDC, 8 decimals
+    mapping(address => uint256) public withdrawsWaiting;
+    address[] public withdrawQueue;
 
     constructor(address _usdc, address _gateway) ERC20("pooled USDC", "pUSDC") {
         usdc = _usdc;
         gateway = _gateway;
+        _mint(msg.sender, 1000000000); //Only for testing purposes
+    }
+
+    function decimals() public pure override returns (uint8) {
+        return 8;
     }
 
     modifier notDuringRide() {
@@ -48,7 +55,7 @@ contract PoolerL2 is ERC20, Ownable {
 
         require(depositAmount > 0, "No deposit ticket found");
 
-        uint256 originalAmount = depositAmount / (1 - feeRate / 10000);
+        uint256 originalAmount = (depositAmount * 10000) / (10000 - feeRate);
         uint256 fee = originalAmount - depositAmount;
 
         feeBucket -= fee;
@@ -86,14 +93,15 @@ contract PoolerL2 is ERC20, Ownable {
             "No deposits or withdraw to launch bus with"
         );
         rideOngoing = true;
-        driver = msg.sender
+        driver = msg.sender;
 
         // approve gateway
-        IGateway(gateway).sendRequestToBridge(
-            totalAmountToDeposit,
-            totalAmountToWithdraw,
-            gasLimitForL1Tx
-        );
+        IERC20(usdc).approve(gateway, totalAmountToDeposit);
+        // IGateway(gateway).sendRequestToBridge(
+        //     totalAmountToDeposit,
+        //     totalAmountToWithdraw,
+        //     gasLimitForL1Tx
+        // );
     }
 
     function gatewayCallBack(
@@ -118,7 +126,10 @@ contract PoolerL2 is ERC20, Ownable {
         for (uint i = 0; i < withdrawQueue.length; i++) {
             address user = withdrawQueue[i];
             uint256 amount = withdrawsWaiting[user];
-            IERC20(usdc).transfer(user, amount*amountWithdrawn/totalAmountToWithdraw)
+            IERC20(usdc).transfer(
+                user,
+                (amount * amountWithdrawn) / totalAmountToWithdraw
+            );
             delete withdrawsWaiting[user];
         }
         delete withdrawQueue;
