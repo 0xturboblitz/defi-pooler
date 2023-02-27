@@ -61,7 +61,12 @@ contract PoolerL2 is ERC20, Ownable {
 
         IERC20(usdc).transfer(msg.sender, originalAmount);
         delete depositsWaiting[msg.sender];
-        // delete him from depositQueue !!
+
+        for (uint i = 0; i < depositQueue.length; i++) {
+            if (depositQueue[i] == msg.sender) {
+                delete depositQueue[i];
+            }
+        }
     }
 
     function withdraw(uint256 amount) public notDuringRide {
@@ -84,7 +89,11 @@ contract PoolerL2 is ERC20, Ownable {
 
         _mint(msg.sender, withdrawAmount);
         delete withdrawsWaiting[msg.sender];
-        // delete him from withdrawQueue !!
+        for (uint i = 0; i < withdrawQueue.length; i++) {
+            if (withdrawQueue[i] == msg.sender) {
+                delete withdrawQueue[i];
+            }
+        }
     }
 
     // calles to start the ride
