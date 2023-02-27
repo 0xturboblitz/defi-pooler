@@ -59,10 +59,15 @@ contract PoolerL1 {
         require(rideOngoing == true, "No ride in progress");
 
         uint256 lastUSDCAmountWithdrawn = IERC20(usdc).balanceOf(address(this));
+        address driver = msg.sender;
 
         IERC20(usdc).transfer(gateAddress, lastUSDCAmountWithdrawn);
 
-        GateL1(gateAddress).unWarp(lastMintedAmount, lastUSDCAmountWithdrawn);
+        GateL1(gateAddress).unWarp(
+            lastMintedAmount,
+            lastUSDCAmountWithdrawn,
+            driver
+        );
         rideOngoing = false;
     }
 }
