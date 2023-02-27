@@ -33,5 +33,3 @@ contract GateL2  {
     function getITokensToInvest() public view returns(uint256){
         return IERC20(iTokenAddress).balanceOf(address(this));
     }
-
-}
