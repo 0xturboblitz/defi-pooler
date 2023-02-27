@@ -23,7 +23,7 @@ contract GateL2  {
     // function to call the axelarGate to send tokens to L1
     function sendTokensToL1(string memory destinationChain, string memory symbol) public {
 
-        byte memory payload =         
+        // byte memory payload = 
         IAxelarGater(axelarGate).callContractWithToken(destinationChain, l1GateAddress, payload, symbol, getITokensToInvest());
     }
 
