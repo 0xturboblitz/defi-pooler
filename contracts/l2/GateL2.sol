@@ -3,13 +3,16 @@ pragma solidity ^0.8.9;
 import {IAxelarGateway} from "../interfaces/IAxelarGateway.sol";
 import {IAxelarExecutable} from "../interfaces/IAxelarExecutable.sol";
 import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
+import {Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
+import {PoolerL2} from "./PoolerL2.sol";
 
-contract GateL2 is IAxelarExecutable {
+contract GateL2 is IAxelarExecutable, Ownable {
     string public destinationChain;
     string public l1GateAddress;
     string public symbol;
     address public iTokenAddress;
     address public pTokenAddress;
+    address public pooler;
 
     constructor(
         address axelarGateway,
@@ -17,8 +20,10 @@ contract GateL2 is IAxelarExecutable {
         string memory _l1GateAddress,
         string memory _symbol,
         address _iTokenAddress,
-        address _pTokenAddress
+        address _pTokenAddress,
+        address _pooler
     ) IAxelarExecutable(axelarGateway) {
+        pooler = _pooler;
         destinationChain = _destinationChain;
         l1GateAddress = _l1GateAddress;
         symbol = _symbol;
@@ -59,6 +64,38 @@ contract GateL2 is IAxelarExecutable {
 
         // check that the amount is not 0
         require(amount > 0, "Amount must be greater than 0");
+
+        // check that the source address is the l1GateAddress
+        require(
+            keccak256(abi.encodePacked(sourceAddress)) ==
+                keccak256(abi.encodePacked(l1GateAddress)),
+            "Source address does not match"
+        );
+
+        //check that the source chain is the one expected
+        require(
+            keccak256(abi.encodePacked(destinationChain)) ==
+                keccak256(abi.encodePacked(sourceChain)),
+            "Source chain does not match"
+        );
+
+        //check that the amount is not greater than the balance of the gate
+        require(
+            amount <= IERC20(iTokenAddress).balanceOf(address(this)),
+            "Amount is greater than the balance of the gate"
+        );
+
+        // get lasmintedamount and driver from payload
+        (uint256 lastMintedAmount, address driver) = abi.decode(
+            payload,
+            (uint256, address)
+        );
+
+        //tranfer the amount of tokens to the pooler
+        IERC20(iTokenAddress).transfer(pooler, amount);
+
+        // call pooler to finalizw the unwarp
+        PoolerL2(pooler).finalizeUnwarp(lastMintedAmount, driver);
     }
 
     function _execute(
@@ -75,4 +112,9 @@ contract GateL2 is IAxelarExecutable {
     // function getITokensToInvest() public view returns(uint256){
     //     return IERC20(iTokenAddress).balanceOf(address(this));
     // }
+
+    // owner only function to modify the l1GateAddress
+    function setL1GateAddress(string memory _l1GateAddress) public onlyOwner {
+        l1GateAddress = _l1GateAddress;
+    }
 }

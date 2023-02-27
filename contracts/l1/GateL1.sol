@@ -18,8 +18,10 @@ contract GateL1 is IAxelarExecutable {
         string memory _l2GateAddress,
         string memory _symbol,
         address _iTokenAddress,
-        address _pTokenAddress
+        address _pTokenAddress,
+        address _pooler
     ) IAxelarExecutable(axelarGateway) {
+        pooler = _pooler;
         destinationChain = _destinationChain;
         l2GateAddress = _l2GateAddress;
         symbol = _symbol;
@@ -34,7 +36,7 @@ contract GateL1 is IAxelarExecutable {
         uint256 lastUSDCAmountWithdrawn,
         address driver
     ) public {
-        bytes memory payload = abi.encode(abi.encode(lastMintedAmount, driver));
+        bytes memory payload = abi.encode(lastMintedAmount, driver);
 
         // au choix: envoyer le montant de tokens manuellement ou
         // envoyer le montant de tokens qui sont dans la gate
@@ -73,6 +75,13 @@ contract GateL1 is IAxelarExecutable {
             "Source chain does not match"
         );
 
+        // check that the source address is gatel2 address
+        require(
+            keccak256(abi.encodePacked(sourceAddress)) ==
+                keccak256(abi.encodePacked(l2GateAddress)),
+            "Source address does not match"
+        );
+
         // get the amount to withdraw from the payload
         uint256 amountToWithdraw = abi.decode(payload, (uint256));
 
@@ -86,10 +95,6 @@ contract GateL1 is IAxelarExecutable {
         bytes calldata payload
     ) internal override {
         // check that the source chain is the one expected
-        require(
-            keccak256(abi.encodePacked(destinationChain)) ==
-                keccak256(abi.encodePacked(sourceChain)),
-            "Source chain does not match"
-        );
+        revert("This function should not be called");
     }
 }

@@ -123,7 +123,10 @@ contract PoolerL2 is ERC20, Ownable {
     }
 
     // calleed by l2 gate after bus is back
-    function receiveBus(uint256 lastMintedAmount, address returnDriver) public {
+    function finalizeUnwarp(
+        uint256 lastMintedAmount,
+        address returnDriver
+    ) public {
         require(msg.sender == gateAddress, "Only gate can call this function");
         require(rideOngoing == true, "No ride in progress");
 
