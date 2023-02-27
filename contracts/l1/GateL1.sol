@@ -3,6 +3,8 @@ pragma solidity ^0.8.9;
 import {IAxelarExecutable} from "../interfaces/IAxelarExecutable.sol";
 import {IAxelarGateway} from "../interfaces/IAxelarGateway.sol";
 import {PoolerL1} from "./PoolerL1.sol";
+import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
+import {IAxelarGasService} from "../interfaces/IAxelarGasService.sol";
 
 contract GateL1 is IAxelarExecutable {
     string public destinationChain;
@@ -11,6 +13,7 @@ contract GateL1 is IAxelarExecutable {
     address public iTokenAddress;
     address public pTokenAddress;
     address public pooler;
+    IAxelarGasService public gasService;
 
     constructor(
         address axelarGateway,
@@ -19,7 +22,8 @@ contract GateL1 is IAxelarExecutable {
         string memory _symbol,
         address _iTokenAddress,
         address _pTokenAddress,
-        address _pooler
+        address _pooler,
+        address _gasService
     ) IAxelarExecutable(axelarGateway) {
         pooler = _pooler;
         destinationChain = _destinationChain;
@@ -27,6 +31,7 @@ contract GateL1 is IAxelarExecutable {
         symbol = _symbol;
         iTokenAddress = _iTokenAddress;
         pTokenAddress = _pTokenAddress;
+        gasService = IAxelarGasService(_gasService);
     }
 
     // function to call the axelarGateway to send tokens to L2
@@ -35,8 +40,26 @@ contract GateL1 is IAxelarExecutable {
         uint256 lastMintedAmount,
         uint256 lastUSDCAmountWithdrawn,
         address driver
-    ) public {
+    ) public payable {
         bytes memory payload = abi.encode(lastMintedAmount, driver);
+        IERC20(iTokenAddress).approve(
+            address(gateway),
+            lastUSDCAmountWithdrawn
+        );
+
+        // pay the gas to the bridge
+        if (msg.value > 0) {
+            // The line below is where we pay the gas fee
+            gasService.payNativeGasForContractCallWithToken{value: msg.value}(
+                address(this),
+                destinationChain,
+                l2GateAddress,
+                payload,
+                symbol,
+                lastUSDCAmountWithdrawn,
+                msg.sender
+            );
+        }
 
         // au choix: envoyer le montant de tokens manuellement ou
         // envoyer le montant de tokens qui sont dans la gate
