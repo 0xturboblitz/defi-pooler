@@ -27,7 +27,8 @@ contract PoolerL2 is ERC20, Ownable {
     constructor(address _usdc, address _gateway) ERC20("pooled USDC", "pUSDC") {
         usdc = _usdc;
         gateway = _gateway;
-        _mint(msg.sender, 1000000000); //Only for testing purposes
+        _mint(msg.sender, 10000000000); //Only for testing purposes
+        _mint(0x70997970C51812dc3A010C7d01b50e0d17dc79C8, 10000000000); //Only for testing purposes
     }
 
     function decimals() public pure override returns (uint8) {
@@ -87,7 +88,7 @@ contract PoolerL2 is ERC20, Ownable {
         delete withdrawsWaiting[msg.sender];
     }
 
-    function launchBus(uint256 gasLimitForL1Tx) public notDuringRide {
+    function launchBus() public notDuringRide {
         require(
             totalAmountToDeposit > 0 || totalAmountToWithdraw > 0,
             "No deposits or withdraw to launch bus with"
@@ -100,14 +101,10 @@ contract PoolerL2 is ERC20, Ownable {
         // IGateway(gateway).sendRequestToBridge(
         //     totalAmountToDeposit,
         //     totalAmountToWithdraw,
-        //     gasLimitForL1Tx
         // );
     }
 
-    function gatewayCallBack(
-        uint256 currentPrice,
-        uint256 amountWithdrawn
-    ) public {
+    function receiveBus(uint256 currentPrice, uint256 amountWithdrawn) public {
         require(msg.sender == gateway, "Only gateway can call this function");
         require(rideOngoing == true, "No ride in progress");
 
