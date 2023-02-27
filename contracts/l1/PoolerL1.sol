@@ -2,6 +2,7 @@
 pragma solidity ^0.8.9;
 
 import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
+import {GateL1} from "./GateL1.sol";
 
 interface CErc20 {
     function mint(uint mintAmount) external returns (uint);
@@ -14,16 +15,16 @@ interface CErc20 {
 contract PoolerL1 {
     address public usdc;
     address public fusdc;
-    address public gateway;
+    address public gateAddress;
 
     bool public rideOngoing;
 
     uint256 public lastMintedAmount;
 
-    constructor(address _usdc, address _fusdc, address _gateway) {
+    constructor(address _usdc, address _fusdc, address _gateAddress) {
         usdc = _usdc;
         fusdc = _fusdc;
-        gateway = _gateway;
+        gateAddress = _gateAddress;
     }
 
     modifier notDuringRide() {
@@ -33,7 +34,7 @@ contract PoolerL1 {
 
     // call par la gate l1 apres que le bus aller soit arrivé
     function finalizeWarp(uint256 totalAmountToWithdraw) public notDuringRide {
-        require(msg.sender == gateway, "Only gateway can call this function");
+        require(msg.sender == gateAddress, "Only gateway can call this function");
         rideOngoing = true;
 
         uint256 totalAmountToDeposit = IERC20(usdc).balanceOf(address(this));
@@ -56,10 +57,13 @@ contract PoolerL1 {
 
         uint256 lastUSDCAmountWithdrawn = IERC20(usdc).balanceOf(address(this));
 
-        IERC20(usdc).transfer(gateway, lastUSDCAmountWithdrawn);
-        // IGateway(gateway).sendRequestToBridge(
-        //     lastMintedAmount,
-        // );
+        IERC20(usdc).transfer(gateAddress, lastUSDCAmountWithdrawn);
+
+
+        GateL1(gateAddress).unWarp(
+            lastMintedAmount,
+            lastUSDCAmountWithdrawn
+        );
         rideOngoing = false;
     }
 }

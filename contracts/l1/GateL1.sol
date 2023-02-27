@@ -25,6 +25,23 @@ contract GateL1 is IAxelarExecutable {
         pTokenAddress = _pTokenAddress;
     }
 
+    // function to call the axelarGateway to send tokens to L2
+    // this function is called when the bus leaves the l1
+    function unWarp(uint256 lastMintedAmount, uint256 lastUSDCAmountWithdrawn) public {
+
+
+        bytes memory payload = abi.encode(
+            abi.encode(
+                lastMintedAmount
+            )
+        );
+
+        // au choix: envoyer le montant de tokens manuellement ou 
+        // envoyer le montant de tokens qui sont dans la gate
+        // IAxelarGateway(axelarGateway).callContractWithToken(destinationChain, l1GateAddress, payload, symbol, getITokensToInvest());
+        IAxelarGateway(axelarGateway).callContractWithToken(destinationChain, l1GateAddress, payload, symbol, lastUSDCAmountWithdrawn);
+    }
+
     // implement functions from IAxelarExecutable
 
     // function called when the tokens arrive on L1

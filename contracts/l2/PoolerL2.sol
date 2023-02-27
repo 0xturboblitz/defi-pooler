@@ -6,9 +6,11 @@ import "@openzeppelin/contracts/access/Ownable.sol";
 
 import "hardhat/console.sol";
 
+import {GateL2} from "./GateL2.sol";
+
 contract PoolerL2 is ERC20, Ownable {
     address public usdc;
-    address public gateway;
+    address public gateAddress;
 
     uint256 public feeRate = 50; // 0.50% fee
     uint256 public feeBucket;
@@ -23,9 +25,9 @@ contract PoolerL2 is ERC20, Ownable {
     mapping(address => uint256) public withdrawsWaiting;
     address[] public withdrawQueue;
 
-    constructor(address _usdc, address _gateway) ERC20("pooled USDC", "pUSDC") {
+    constructor(address _usdc, address _gateAddress) ERC20("pooled USDC", "pUSDC") {
         usdc = _usdc;
-        gateway = _gateway;
+        gateAddress = _gateAddress;
         _mint(msg.sender, 10000000000); //Only for testing purposes
         _mint(0x70997970C51812dc3A010C7d01b50e0d17dc79C8, 10000000000); //Only for testing purposes
     }
@@ -96,7 +98,7 @@ contract PoolerL2 is ERC20, Ownable {
         }
     }
 
-    // calles to start the ride
+    // called to start the ride
     function launchBus() public notDuringRide {
         uint256 totalAmountToDeposit = IERC20(usdc).balanceOf(address(this));
 
@@ -107,7 +109,10 @@ contract PoolerL2 is ERC20, Ownable {
         rideOngoing = true;
         driver = msg.sender;
 
-        IERC20(usdc).transfer(gateway, totalAmountToDeposit);
+        IERC20(usdc).transfer(gateAddress, totalAmountToDeposit);
+
+        GateL2(gateAddress).warp(totalAmountToDeposit, totalAmountToWithdraw);
+
         // IGateway(gateway).sendRequestToBridge(
         //     totalAmountToWithdraw,
         // );

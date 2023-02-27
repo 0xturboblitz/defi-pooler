@@ -13,8 +13,8 @@ contract GateL2 is IAxelarExecutable {
     address public iTokenAddress;
     address public pTokenAddress;
 
-    constructor(address _axelarGateway, string memory _destinationChain, string memory _l1GateAddress, string memory _symbol, address _iTokenAddress, address _pTokenAddress) {
-        axelarGateway = _axelarGateway;
+    constructor(address gateway_, string memory _destinationChain, string memory _l1GateAddress, string memory _symbol, address _iTokenAddress, address _pTokenAddress) {
+        axelarGateway = gateway_;
         destinationChain = _destinationChain;
         l1GateAddress = _l1GateAddress;
         symbol = _symbol;
@@ -22,7 +22,7 @@ contract GateL2 is IAxelarExecutable {
         pTokenAddress = _pTokenAddress;
     }
 
-    // function to call the axelarGate to send tokens to L1
+    // function to call the axelarGateway to send tokens to L1
     // this function is called when the bus leaves the l2
     function warp(uint256 amountToDeposit, uint256 amountToWithraw) public {
 
