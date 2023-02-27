@@ -11,9 +11,7 @@ contract PoolerL2 is ERC20, Ownable {
     uint256 feeRate = 25; // 0.25% fee
     uint256 feeBucket;
 
-    uint256 currentEpoch;
     bool rideOngoing;
-
     address driver;
 
     uint256 public totalAmountToDeposit;
@@ -66,11 +64,8 @@ contract PoolerL2 is ERC20, Ownable {
         require(position > 0, "No position found");
         require(position >= amount, "Cannot withdraw more than position");
 
-        uint256 fee = (amount * feeRate) / 10000;
-        feeBucket += fee;
-
-        withdrawsWaiting[msg.sender] = amount - fee;
-        totalAmountToWithdraw += amount - fee;
+        withdrawsWaiting[msg.sender] = amount;
+        totalAmountToWithdraw += amount;
 
         _burn(msg.sender, amount);
         withdrawQueue.push(msg.sender);
@@ -81,13 +76,7 @@ contract PoolerL2 is ERC20, Ownable {
 
         require(withdrawAmount > 0, "No deposit ticket found");
 
-        uint256 originalAmount = withdrawAmount / (1 - feeRate / 10000);
-        uint256 fee = originalAmount - withdrawAmount;
-
-        feeBucket -= fee;
-        totalAmountToWithdraw -= withdrawAmount;
-
-        _mint(msg.sender, originalAmount);
+        _mint(msg.sender, withdrawAmount);
         delete withdrawsWaiting[msg.sender];
     }
 
@@ -100,7 +89,7 @@ contract PoolerL2 is ERC20, Ownable {
         driver = msg.sender
 
         // approve gateway
-        IGateway(gateway)._sendRequestToBridge(
+        IGateway(gateway).sendRequestToBridge(
             totalAmountToDeposit,
             totalAmountToWithdraw,
             gasLimitForL1Tx
@@ -129,9 +118,7 @@ contract PoolerL2 is ERC20, Ownable {
         for (uint i = 0; i < withdrawQueue.length; i++) {
             address user = withdrawQueue[i];
             uint256 amount = withdrawsWaiting[user];
-            // transfer(user, amount)
-
-            _mint(user, amount / currentPrice);
+            IERC20(usdc).transfer(user, amount*amountWithdrawn/totalAmountToWithdraw)
             delete withdrawsWaiting[user];
         }
         delete withdrawQueue;
@@ -139,10 +126,4 @@ contract PoolerL2 is ERC20, Ownable {
 
         rideOngoing = false;
     }
-
-    function _sendRequestToBridge(
-        uint256 amountToDeposit,
-        uint256 amountToWithdraw,
-        uint256 gasLimit
-    ) internal {}
 }
