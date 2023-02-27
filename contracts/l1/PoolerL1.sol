@@ -31,6 +31,7 @@ contract PoolerL1 {
         _;
     }
 
+    // call par la gate l1 apres que le bus aller soit arrivé
     function receiveBus(
         uint256 totalAmountToDeposit,
         uint256 totalAmountToWithdraw
@@ -48,6 +49,9 @@ contract PoolerL1 {
         lastExchangeRate = CErc20(fusdc).exchangeRateCurrent();
     }
 
+    // pour lancer le retour
+    // call la gate l1 
+    // lastExchange rate et amount withdrawn
     function launchBus() public {
         require(rideOngoing == true, "No ride in progress");
 

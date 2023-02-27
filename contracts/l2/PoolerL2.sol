@@ -88,6 +88,7 @@ contract PoolerL2 is ERC20, Ownable {
         delete withdrawsWaiting[msg.sender];
     }
 
+    // calles to start the ride
     function launchBus() public notDuringRide {
         require(
             totalAmountToDeposit > 0 || totalAmountToWithdraw > 0,
@@ -104,6 +105,7 @@ contract PoolerL2 is ERC20, Ownable {
         // );
     }
 
+    // calleed by l2 gate after bus is back
     function receiveBus(uint256 currentPrice, uint256 amountWithdrawn) public {
         require(msg.sender == gateway, "Only gateway can call this function");
         require(rideOngoing == true, "No ride in progress");
