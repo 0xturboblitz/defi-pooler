@@ -36,6 +36,11 @@ contract PoolerL2 is ERC20, Ownable {
         _mint(0x70997970C51812dc3A010C7d01b50e0d17dc79C8, 10000000000); //Only for testing purposes
     }
 
+    modifier hasAGate() {
+        require(gateAddress != address(0), "No gate address set");
+        _;
+    }
+
     function decimals() public pure override returns (uint8) {
         return 8;
     }
@@ -105,7 +110,7 @@ contract PoolerL2 is ERC20, Ownable {
     }
 
     // called to start the ride
-    function launchBus() public notDuringRide {
+    function launchBus() public notDuringRide hasAGate {
         require(
             totalAmountToDeposit > 0 || totalAmountToWithdraw > 0,
             "No deposits or withdraw to launch bus with"
@@ -161,5 +166,10 @@ contract PoolerL2 is ERC20, Ownable {
         totalAmountToWithdraw = 0;
 
         rideOngoing = false;
+    }
+
+    // function to set gate address
+    function setGateAddress(address _gateAddress) public onlyOwner {
+        gateAddress = _gateAddress;
     }
 }

@@ -2,6 +2,8 @@
 pragma solidity ^0.8.9;
 
 import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
+import "@openzeppelin/contracts/access/Ownable.sol";
+
 import {GateL1} from "./GateL1.sol";
 
 interface CErc20 {
@@ -12,7 +14,7 @@ interface CErc20 {
     function exchangeRateCurrent() external returns (uint);
 }
 
-contract PoolerL1 {
+contract PoolerL1 is Ownable {
     address public usdc;
     address public fusdc;
     address public gateAddress;
@@ -21,14 +23,17 @@ contract PoolerL1 {
 
     uint256 public lastMintedAmount;
 
-    constructor(address _usdc, address _fusdc, address _gateAddress) {
+    constructor(address _usdc, address _fusdc) {
         usdc = _usdc;
         fusdc = _fusdc;
-        gateAddress = _gateAddress;
     }
 
     modifier notDuringRide() {
         require(rideOngoing == false, "Ride in progress. Try later");
+        _;
+    }
+    modifier hasAGate() {
+        require(gateAddress != address(0), "No gate address set");
         _;
     }
 
@@ -55,7 +60,7 @@ contract PoolerL1 {
     // pour lancer le retour
     // call la gate l1
     // lastExchange rate et amount withdrawn
-    function launchBus() public {
+    function launchBus() public hasAGate {
         require(rideOngoing == true, "No ride in progress");
 
         uint256 lastUSDCAmountWithdrawn = IERC20(usdc).balanceOf(address(this));
@@ -69,5 +74,10 @@ contract PoolerL1 {
             driver
         );
         rideOngoing = false;
+    }
+
+    // function to set gate address
+    function setGateAddress(address _gateAddress) public onlyOwner {
+        gateAddress = _gateAddress;
     }
 }
