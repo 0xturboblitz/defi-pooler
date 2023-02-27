@@ -32,7 +32,7 @@ contract PoolerL1 {
     }
 
     // call par la gate l1 apres que le bus aller soit arrivé
-    function receiveBus(
+    function finalizeWarp(
         uint256 totalAmountToDeposit,
         uint256 totalAmountToWithdraw
     ) public notDuringRide {

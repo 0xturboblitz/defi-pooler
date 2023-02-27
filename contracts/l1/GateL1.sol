@@ -2,6 +2,8 @@
 pragma solidity ^0.8.9;
 import {IAxelarExecutable} from "../interfaces/IAxelarExecutable.sol";
 import {IAxelarGateway} from "../interfaces/IAxelarGateway.sol";
+import {PoolerL1} from "./PoolerL1.sol";
+
 
 
 contract GateL1 is IAxelarExecutable {
@@ -12,6 +14,7 @@ contract GateL1 is IAxelarExecutable {
     string public symbol;
     address public iTokenAddress;
     address public pTokenAddress;
+    address public pooler;
     
     constructor(address _axelarGateway, string memory _destinationChain, string memory _l2GateAddress, string memory _symbol, address _iTokenAddress, address _pTokenAddress) {
         axelarGateway = _axelarGateway;
@@ -20,6 +23,40 @@ contract GateL1 is IAxelarExecutable {
         symbol = _symbol;
         iTokenAddress = _iTokenAddress;
         pTokenAddress = _pTokenAddress;
+    }
+
+    // implement functions from IAxelarExecutable
+
+    // function called when the tokens arrive on L1
+    function _executeWithToken(
+        string memory sourceChain,
+        string memory sourceAddress,
+        bytes calldata payload,
+        string memory tokenSymbol,
+        uint256 amount
+    ) internal override {
+        // check that the token is the one expected
+        require(keccak256(abi.encodePacked(symbol)) == keccak256(abi.encodePacked(tokenSymbol)), "Token symbol does not match");
+        // check that the amount is not 0
+        require(amount > 0, "Amount must be greater than 0");
+        // check that the source chain is the one expected
+        require(keccak256(abi.encodePacked(destinationChain)) == keccak256(abi.encodePacked(sourceChain)), "Source chain does not match");
+
+        // get the amount to withdraw from the payload
+        uint256 amountToWithdraw = abi.decode(payload, (uint256));
+
+        // call the pooler to invest the tokens
+        PoolerL1(pooler).finalizeWarp(amount, amountToWithdraw);
+
+    }
+
+    function _execute(
+        string memory sourceChain,
+        string memory sourceAddress,
+        bytes calldata payload
+    ) internal override {
+        // check that the source chain is the one expected
+        require(keccak256(abi.encodePacked(destinationChain)) == keccak256(abi.encodePacked(sourceChain)), "Source chain does not match");
     }
 
     

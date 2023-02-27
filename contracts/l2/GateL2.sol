@@ -4,7 +4,7 @@ import {IAxelarGateway} from "../interfaces/IAxelarGateway.sol";
 import {IAxelarExecutable} from "../interfaces/IAxelarExecutable.sol";
 import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 
-contract GateL2  {
+contract GateL2 is IAxelarExecutable {
 
     address public axelarGateway; 
     string public destinationChain;
@@ -27,9 +27,7 @@ contract GateL2  {
     function warp(uint256 amountToDeposit, uint256 amountToWithraw) public {
 
         bytes memory payload = abi.encode(
-            abi.encodeWithSignature(
-                "receiveBus(uint256,uint256)",
-                amountToDeposit,
+            abi.encode(
                 amountToWithraw
             )
         );
@@ -40,29 +38,35 @@ contract GateL2  {
         IAxelarGateway(axelarGateway).callContractWithToken(destinationChain, l1GateAddress, payload, symbol, amountToDeposit);
     }
 
-
-
     function _executeWithToken(
         string memory sourceChain,
         string memory sourceAddress,
         bytes calldata payload,
         string memory tokenSymbol,
         uint256 amount
-    ) internal  {
+    ) internal override {
         // check that the token is the one expected
         require(keccak256(abi.encodePacked(symbol)) == keccak256(abi.encodePacked(symbol)), "Token symbol does not match");
 
         // check that the amount is not 0
         require(amount > 0, "Amount must be greater than 0");
 
-        // transfer the tokens to the gate
-        IERC20(iTokenAddress).transferFrom(sourceAddress, address(this), amount);
+    }
+
+    function _execute(
+        string memory sourceChain,
+        string memory sourceAddress,
+        bytes calldata payload
+    ) internal override {  
+        revert("This function should not be called");
     }
 
     // function to get the iToken balance of the gate
     // this is the amount of tokens that have been deposited
     // by users and are waiting to be sent to L1
-    function getITokensToInvest() public view returns(uint256){
-        return IERC20(iTokenAddress).balanceOf(address(this));
-    }
+    // function getITokensToInvest() public view returns(uint256){
+    //     return IERC20(iTokenAddress).balanceOf(address(this));
+    // }
+
+
 }
