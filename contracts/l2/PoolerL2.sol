@@ -18,6 +18,7 @@ contract PoolerL2 is ERC20, Ownable {
     bool public rideOngoing;
     address public driver;
 
+    uint256 public totalAmountToDeposit; //in USDC, 6 decimals
     mapping(address => uint256) public depositsWaiting;
     address[] public depositQueue;
 
@@ -46,6 +47,7 @@ contract PoolerL2 is ERC20, Ownable {
         feeBucket += fee;
 
         depositsWaiting[msg.sender] = amount - fee;
+        totalAmountToDeposit += amount - fee;
         depositQueue.push(msg.sender);
 
         IERC20(usdc).transferFrom(msg.sender, address(this), amount);
@@ -60,6 +62,7 @@ contract PoolerL2 is ERC20, Ownable {
         uint256 fee = originalAmount - depositAmount;
 
         feeBucket -= fee;
+        totalAmountToDeposit -= depositAmount;
 
         IERC20(usdc).transfer(msg.sender, originalAmount);
         delete depositsWaiting[msg.sender];
@@ -100,8 +103,6 @@ contract PoolerL2 is ERC20, Ownable {
 
     // called to start the ride
     function launchBus() public notDuringRide {
-        uint256 totalAmountToDeposit = IERC20(usdc).balanceOf(address(this));
-
         require(
             totalAmountToDeposit > 0 || totalAmountToWithdraw > 0,
             "No deposits or withdraw to launch bus with"
@@ -119,26 +120,27 @@ contract PoolerL2 is ERC20, Ownable {
     }
 
     // calleed by l2 gate after bus is back
-    function receiveBus(uint256 lastMintedAmount) public {
+    function receiveBus(uint256 lastMintedAmount, address returnDriver) public {
         require(msg.sender == gateway, "Only gateway can call this function");
         require(rideOngoing == true, "No ride in progress");
 
         // for each fUSDC minted on L1, mint pUSDC proportionately to deposits
-        uint256 sumOfDepositAmounts = 0;
-        for (uint i = 0; i < depositQueue.length; i++) {
-            sumOfDepositAmounts += depositsWaiting[depositQueue[i]];
-        }
-
         for (uint i = 0; i < depositQueue.length; i++) {
             address user = depositQueue[i];
             uint256 amount = depositsWaiting[user];
-            _mint(user, (amount * lastMintedAmount) / sumOfDepositAmounts);
-            // _mint(user, amount / currentPrice);
+            _mint(user, (amount * lastMintedAmount) / totalAmountToDeposit);
             delete depositsWaiting[user];
         }
         delete depositQueue;
+        totalAmountToDeposit = 0
 
-        //distribute USDC received proportionately to withdraws in withdrawQueue
+        // pay drivers, half goes to each
+        uint256 driverFee = feeBucket / 2;
+        IERC20(usdc).transfer(driver, driverFee);
+        IERC20(usdc).transfer(returnDriver, driverFee);
+        feeBucket = 0;
+
+        // distribute USDC received proportionately to withdraws in withdrawQueue
         uint256 amountWithdrawn = IERC20(usdc).balanceOf(address(this));
         for (uint i = 0; i < withdrawQueue.length; i++) {
             address user = withdrawQueue[i];
