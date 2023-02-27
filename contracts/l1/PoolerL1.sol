@@ -34,7 +34,10 @@ contract PoolerL1 {
 
     // call par la gate l1 apres que le bus aller soit arrivé
     function finalizeWarp(uint256 totalAmountToWithdraw) public notDuringRide {
-        require(msg.sender == gateAddress, "Only gateway can call this function");
+        require(
+            msg.sender == gateAddress,
+            "Only gateway can call this function"
+        );
         rideOngoing = true;
 
         uint256 totalAmountToDeposit = IERC20(usdc).balanceOf(address(this));
@@ -59,11 +62,7 @@ contract PoolerL1 {
 
         IERC20(usdc).transfer(gateAddress, lastUSDCAmountWithdrawn);
 
-
-        GateL1(gateAddress).unWarp(
-            lastMintedAmount,
-            lastUSDCAmountWithdrawn
-        );
+        GateL1(gateAddress).unWarp(lastMintedAmount, lastUSDCAmountWithdrawn);
         rideOngoing = false;
     }
 }

@@ -25,7 +25,10 @@ contract PoolerL2 is ERC20, Ownable {
     mapping(address => uint256) public withdrawsWaiting;
     address[] public withdrawQueue;
 
-    constructor(address _usdc, address _gateAddress) ERC20("pooled USDC", "pUSDC") {
+    constructor(
+        address _usdc,
+        address _gateAddress
+    ) ERC20("pooled USDC", "pUSDC") {
         usdc = _usdc;
         gateAddress = _gateAddress;
         _mint(msg.sender, 10000000000); //Only for testing purposes
@@ -120,7 +123,10 @@ contract PoolerL2 is ERC20, Ownable {
 
     // calleed by l2 gate after bus is back
     function receiveBus(uint256 lastMintedAmount) public {
-        require(msg.sender == gateway, "Only gateway can call this function");
+        require(
+            msg.sender == gateAddress,
+            "Only gateway can call this function"
+        );
         require(rideOngoing == true, "No ride in progress");
 
         // for each fUSDC minted on L1, mint pUSDC proportionately to deposits
