@@ -18,8 +18,8 @@ contract GateL1 is IAxelarExecutable {
     constructor(
         address axelarGateway,
         string memory _destinationChain,
-        string memory _l2GateAddress,
         string memory _symbol,
+        string memory _l2GateAddress,
         address _iTokenAddress,
         address _pTokenAddress,
         address _pooler,
