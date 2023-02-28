@@ -9,7 +9,7 @@ const prompt = require('prompt-sync')();
 
 async function main() {
 
-  const usdcAddress = "0x254d06f33bDc5b8ee05b2ea472107E300226659A ";
+  const usdcAddress = "0x254d06f33bDc5b8ee05b2ea472107E300226659A";
   const axelarAddress = "0xe432150cce91c13a887f7D836923d5597adD8E31";
   const destinationChain = "Polygon";
   const symbol = "aUSDC";
@@ -17,7 +17,7 @@ async function main() {
   const cTokenAddress = "0x73506770799Eb04befb5AaE4734e58C2C624F493"
   const l2gate = prompt('Enter L2 Gate address:');
   const PoolerL1 = await hre.ethers.getContractFactory("PoolerL1");
-  const pooler = await PoolerL1.deploy(usdcAddress);
+  const pooler = await PoolerL1.deploy(usdcAddress, cTokenAddress);
   await pooler.deployed();
   console.log("Pooler deployed to:", pooler.address);
   const GateL1 = await hre.ethers.getContractFactory("GateL1");

@@ -9,6 +9,7 @@ const prompt = require('prompt-sync')();
 
 async function main() {
 
+
   const usdcAddress = "0x2c852e740B62308c46DD29B982FBb650D063Bd07";
   const axelarAddress = "0xBF62ef1486468a6bd26Dd669C06db43dEd5B849B";
   const destinationChain = "ethereum-2";
@@ -36,7 +37,7 @@ async function main() {
   console.log("Pooler updated with Gate address");
   
   const gateL1addr = prompt('Enter GateL1 address');
-  const setL1Gate = await gate.setL1Gate(gateL1addr);
+  const setL1Gate = await gate.setL1GateAddress(gateL1addr);
   await setL1Gate.wait();
   console.log("Gate updated with L1 Gate address");
   
