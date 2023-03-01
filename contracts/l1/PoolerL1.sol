@@ -3,6 +3,7 @@ pragma solidity ^0.8.9;
 
 import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
+import {AutomationCompatibleInterface} from "@chainlink/contracts/src/v0.8/AutomationCompatible.sol";
 
 import {GateL1} from "./GateL1.sol";
 
@@ -14,18 +15,21 @@ interface CErc20 {
     function exchangeRateCurrent() external returns (uint);
 }
 
-contract PoolerL1 is Ownable {
+contract PoolerL1 is Ownable, AutomationCompatibleInterface {
     address public usdc;
     address public fusdc;
     address public gateAddress;
 
-    bool public rideOngoing;
+    bool public rideOngoing = true;
+    uint256 public rideArrivedTimestamp;
+    uint256 public upKeepInterval;
 
     uint256 public lastMintedAmount;
 
-    constructor(address _usdc, address _fusdc) {
+    constructor(address _usdc, address _fusdc, uint256 _upKeepInterval) {
         usdc = _usdc;
         fusdc = _fusdc;
+        upKeepInterval = _upKeepInterval; // 300 for 5 minutes
     }
 
     modifier notDuringRide() {
@@ -44,6 +48,7 @@ contract PoolerL1 is Ownable {
             "Only gateway can call this function"
         );
         rideOngoing = true;
+        rideArrivedTimestamp = block.timestamp;
 
         uint256 totalAmountToDeposit = IERC20(usdc).balanceOf(address(this));
         // Deposit
@@ -61,23 +66,45 @@ contract PoolerL1 is Ownable {
     // call la gate l1
     // lastExchange rate et amount withdrawn
     function launchBus() public hasAGate {
-        require(rideOngoing == true, "No ride in progress");
+        // require(rideOngoing == true, "No ride in progress");
 
-        uint256 lastUSDCAmountWithdrawn = IERC20(usdc).balanceOf(address(this));
-        address driver = msg.sender;
+        // uint256 lastUSDCAmountWithdrawn = IERC20(usdc).balanceOf(address(this));
+        // address driver = msg.sender; // TODO : us if driver is chainlink
 
-        IERC20(usdc).transfer(gateAddress, lastUSDCAmountWithdrawn);
+        // IERC20(usdc).transfer(gateAddress, lastUSDCAmountWithdrawn);
 
-        GateL1(gateAddress).unWarp(
-            lastMintedAmount,
-            lastUSDCAmountWithdrawn,
-            driver
-        );
+        // GateL1(gateAddress).unWarp(
+        //     lastMintedAmount,
+        //     lastUSDCAmountWithdrawn,
+        //     driver
+        // );
         rideOngoing = false;
     }
 
     // function to set gate address
     function setGateAddress(address _gateAddress) public onlyOwner {
         gateAddress = _gateAddress;
+    }
+
+    function checkUpkeep(
+        bytes calldata
+    )
+        external
+        view
+        override
+        returns (bool upkeepNeeded, bytes memory performData)
+    {
+        upkeepNeeded =
+            rideOngoing &&
+            (block.timestamp - rideArrivedTimestamp) > upKeepInterval;
+    }
+
+    function performUpkeep(bytes calldata) external override {
+        if (
+            rideOngoing &&
+            (block.timestamp - rideArrivedTimestamp) > upKeepInterval
+        ) {
+            launchBus();
+        }
     }
 }
