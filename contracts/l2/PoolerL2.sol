@@ -106,7 +106,7 @@ contract PoolerL2 is ERC20, Ownable {
     }
 
     // called to start the ride
-    function launchBus() public notDuringRide hasAGate {
+    function launchBus() public payable notDuringRide hasAGate {
         require(
             totalAmountToDeposit > 0 || totalAmountToWithdraw > 0,
             "No deposits or withdraw to launch bus with"
@@ -116,7 +116,10 @@ contract PoolerL2 is ERC20, Ownable {
 
         IERC20(usdc).transfer(gateAddress, totalAmountToDeposit);
 
-        GateL2(gateAddress).warp(totalAmountToDeposit, totalAmountToWithdraw);
+        GateL2(gateAddress).warp{value: msg.value}(
+            totalAmountToDeposit,
+            totalAmountToWithdraw
+        );
     }
 
     // called by l2 gate after bus is back

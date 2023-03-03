@@ -60,7 +60,7 @@ contract PoolerL1 is Ownable {
     // pour lancer le retour
     // call la gate l1
     // lastExchange rate et amount withdrawn
-    function launchBus() public hasAGate {
+    function launchBus() public payable hasAGate {
         require(rideOngoing == true, "No ride in progress");
 
         uint256 lastUSDCAmountWithdrawn = IERC20(usdc).balanceOf(address(this));
@@ -68,7 +68,7 @@ contract PoolerL1 is Ownable {
 
         IERC20(usdc).transfer(gateAddress, lastUSDCAmountWithdrawn);
 
-        GateL1(gateAddress).unWarp(
+        GateL1(gateAddress).unWarp{value: msg.value}(
             lastMintedAmount,
             lastUSDCAmountWithdrawn,
             driver
