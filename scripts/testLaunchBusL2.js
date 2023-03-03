@@ -13,14 +13,19 @@ async function main() {
 
   // deposit on l2
   const approve = await ausdcL2.connect(depositor).approve(poolerL2.address, "10000000");
+  console.log("approve tx:", approve.hash)
   await approve.wait();
   const deposit = await poolerL2.connect(depositor).deposit("10000000"); // deposit 10 aUSDC
+  console.log("deposit tx:", deposit.hash)
   await deposit.wait();
   console.log("Deposited 10 aUSDC to L2 pooler");
 
-  await poolerL2.connect(driver).launchBus({
-    value: ethers.utils.parseEther("0.1")
+  const launchBus = await poolerL2.connect(driver).launchBus({
+    value: ethers.utils.parseEther("0.3")
   });
+  console.log("LaunchBus tx:", launchBus.hash)
+  await launchBus.wait();
+  console.log("Launched Bus");
 }
 
 // We recommend this pattern to be able to use async/await everywhere

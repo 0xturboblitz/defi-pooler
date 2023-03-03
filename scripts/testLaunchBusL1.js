@@ -17,10 +17,12 @@ async function main() {
   const poolerL1 = await ethers.getContractAt("PoolerL1", poolerL1addr);
 
   // 10 USDC have to have been deposited already on L1
-  await poolerL1.connect(driver).launchBus({
+  const launchBus = await poolerL1.connect(driver).launchBus({
     value: ethers.utils.parseEther("0.1")
   });
-
+  console.log("LaunchBus tx:", launchBus.hash)
+  await launchBus.wait();
+  console.log("Launched Bus");
 
 
 }
