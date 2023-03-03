@@ -10,8 +10,8 @@ const prompt = require('prompt-sync')();
 async function main() {
 
 
-  const gateL2addr = "0x97629be03B535842FFCbcbd3a5cD2552c37AdefC"
-  const gateL1addr = "0xe0e66a970CfA4Ada327fa61FaA2126aDb834A7a8"
+  const gateL2addr = "0xc94713C5704bE69EB2E87eFd105d805a5DcC28a1"
+  const gateL1addr = "0x9Fc6B5589D5669F3F419C60dFa5787bAD9E23014"
 
 
   // get deployed GateL2 contract
