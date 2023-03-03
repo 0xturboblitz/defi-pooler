@@ -6,9 +6,11 @@ import "@openzeppelin/contracts/access/Ownable.sol";
 
 import "hardhat/console.sol";
 
+import {GateL2} from "./GateL2.sol";
+
 contract PoolerL2 is ERC20, Ownable {
     address public usdc;
-    address public gateway;
+    address payable public gateAddress;
 
     uint256 public feeRate = 50; // 0.50% fee
     uint256 public feeBucket;
@@ -24,11 +26,15 @@ contract PoolerL2 is ERC20, Ownable {
     mapping(address => uint256) public withdrawsWaiting;
     address[] public withdrawQueue;
 
-    constructor(address _usdc, address _gateway) ERC20("pooled USDC", "pUSDC") {
+    constructor(address _usdc) ERC20("pooled USDC", "pUSDC") {
         usdc = _usdc;
-        gateway = _gateway;
         _mint(msg.sender, 10000000000); //Only for testing purposes
         _mint(0x70997970C51812dc3A010C7d01b50e0d17dc79C8, 10000000000); //Only for testing purposes
+    }
+
+    modifier hasAGate() {
+        require(gateAddress != address(0), "No gate address set");
+        _;
     }
 
     function decimals() public pure override returns (uint8) {
@@ -64,6 +70,12 @@ contract PoolerL2 is ERC20, Ownable {
 
         IERC20(usdc).transfer(msg.sender, originalAmount);
         delete depositsWaiting[msg.sender];
+
+        for (uint i = 0; i < depositQueue.length; i++) {
+            if (depositQueue[i] == msg.sender) {
+                delete depositQueue[i];
+            }
+        }
     }
 
     function withdraw(uint256 amount) public notDuringRide {
@@ -86,9 +98,15 @@ contract PoolerL2 is ERC20, Ownable {
 
         _mint(msg.sender, withdrawAmount);
         delete withdrawsWaiting[msg.sender];
+        for (uint i = 0; i < withdrawQueue.length; i++) {
+            if (withdrawQueue[i] == msg.sender) {
+                delete withdrawQueue[i];
+            }
+        }
     }
 
-    function launchBus() public notDuringRide {
+    // called to start the ride
+    function launchBus() public notDuringRide hasAGate {
         require(
             totalAmountToDeposit > 0 || totalAmountToWithdraw > 0,
             "No deposits or withdraw to launch bus with"
@@ -96,30 +114,37 @@ contract PoolerL2 is ERC20, Ownable {
         rideOngoing = true;
         driver = msg.sender;
 
-        // approve gateway
-        IERC20(usdc).approve(gateway, totalAmountToDeposit);
-        // IGateway(gateway).sendRequestToBridge(
-        //     totalAmountToDeposit,
-        //     totalAmountToWithdraw,
-        // );
+        IERC20(usdc).transfer(gateAddress, totalAmountToDeposit);
+
+        GateL2(gateAddress).warp(totalAmountToDeposit, totalAmountToWithdraw);
     }
 
-    function receiveBus(uint256 currentPrice, uint256 amountWithdrawn) public {
-        require(msg.sender == gateway, "Only gateway can call this function");
+    // called by l2 gate after bus is back
+    function finalizeUnwarp(
+        uint256 lastMintedAmount,
+        address returnDriver
+    ) public {
+        require(msg.sender == gateAddress, "Only gate can call this function");
         require(rideOngoing == true, "No ride in progress");
 
-        // convert deposits into pUSDC with currentPrice
+        // for each fUSDC minted on L1, mint pUSDC proportionately to deposits
         for (uint i = 0; i < depositQueue.length; i++) {
             address user = depositQueue[i];
             uint256 amount = depositsWaiting[user];
-            _mint(user, amount / currentPrice);
+            _mint(user, (amount * lastMintedAmount) / totalAmountToDeposit);
             delete depositsWaiting[user];
         }
-
         delete depositQueue;
         totalAmountToDeposit = 0;
 
-        //distribute withdraws according to withdrawQueue
+        // pay drivers, half goes to each
+        uint256 driverFee = feeBucket / 2;
+        IERC20(usdc).transfer(driver, driverFee);
+        IERC20(usdc).transfer(returnDriver, driverFee);
+        feeBucket = 0;
+
+        // distribute USDC received proportionately to withdraws in withdrawQueue
+        uint256 amountWithdrawn = IERC20(usdc).balanceOf(address(this));
         for (uint i = 0; i < withdrawQueue.length; i++) {
             address user = withdrawQueue[i];
             uint256 amount = withdrawsWaiting[user];
@@ -133,5 +158,18 @@ contract PoolerL2 is ERC20, Ownable {
         totalAmountToWithdraw = 0;
 
         rideOngoing = false;
+    }
+
+    // function to set gate address
+    function setGateAddress(address _gateAddress) public onlyOwner {
+        gateAddress = payable(_gateAddress);
+    }
+
+    function depositQueueLength() public view returns (uint256) {
+        return depositQueue.length;
+    }
+
+    function withdrawQueueLength() public view returns (uint256) {
+        return withdrawQueue.length;
     }
 }

@@ -5,22 +5,20 @@
 // will compile your contracts, add the Hardhat Runtime Environment's members to the
 // global scope, and execute the script.
 const hre = require("hardhat");
+const prompt = require('prompt-sync')();
 
 async function main() {
-  const currentTimestampInSeconds = Math.round(Date.now() / 1000);
-  const ONE_YEAR_IN_SECS = 365 * 24 * 60 * 60;
-  const unlockTime = currentTimestampInSeconds + ONE_YEAR_IN_SECS;
 
-  const lockedAmount = hre.ethers.utils.parseEther("1");
+  const usdcAddress = "0x2c852e740B62308c46DD29B982FBb650D063Bd07";
+  // get own address
+  const [deployer] = await hre.ethers.getSigners();
 
-  const Lock = await hre.ethers.getContractFactory("Lock");
-  const lock = await Lock.deploy(unlockTime, { value: lockedAmount });
+  // mint USDC on L2
+  const usdc = await hre.ethers.getContractAt("IERC20WithMint", usdcAddress);
+  const mint = await usdc.mint(deployer.address, "1000000000000000000");
+  await mint.wait();
+  console.log("USDC minted on L2");
 
-  await lock.deployed();
-
-  console.log(
-    `Lock with 1 ETH and unlock timestamp ${unlockTime} deployed to ${lock.address}`
-  );
 }
 
 // We recommend this pattern to be able to use async/await everywhere
