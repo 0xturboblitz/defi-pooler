@@ -41,8 +41,10 @@ contract PoolerL1 is Ownable {
         uint256 totalAmountToDeposit = IERC20(usdc).balanceOf(address(this));
         // Deposit
         uint256 oldfUSDCbalance = IERC20(fusdc).balanceOf(address(this));
+
         IERC20(usdc).approve(fusdc, totalAmountToDeposit);
         VaultL1(fusdc).deposit(totalAmountToDeposit, address(this));
+
         uint256 newfUSDCbalance = IERC20(fusdc).balanceOf(address(this));
         lastMintedAmount = newfUSDCbalance - oldfUSDCbalance;
 

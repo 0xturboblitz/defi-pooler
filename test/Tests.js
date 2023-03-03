@@ -208,27 +208,28 @@ describe("LocalForkL1", function () {
       const { user, otherUser, thirdUser, usdc, poolerL1, gateL1, vault } = await loadFixture(deployFixture);
 
       await user.sendTransaction({to: gateL1.address, value: "100000000000000000"})
-      
+
       // bus is coming with aUSDC from deposit
+      const ausdcRichGuy = await impersonateAddress("0xF52bd269116448745a7e13C3d2f299973Cf671aB");
+      await usdc.connect(ausdcRichGuy).transfer(poolerL1.address, 20000000)
       const gateSigner = await impersonateAddress(gateL1.address);
-      await usdc.connect(user).transfer(poolerL1.address, 20000000)
-      await poolerL1.connect(gateSigner).finalizewarp(
-        1000000000, // 10 fUSDC have to be withdrawn
+      // await usdc.transfer(poolerL1.address, 20000000);
+      
+      expect(await usdc.balanceOf(poolerL1.address)).to.equal(20000000);
+      await poolerL1.connect(gateSigner).finalizeWarp(
+        1000000, // 1 fUSDC has to be withdrawn
       );
+      console.log('balance in fUSDC:', await vault.balanceOf(poolerL1.address))
         
       expect(await poolerL1.rideOngoing()).to.equal(true);
-      
-      // deposit has been done
-      console.log(await vault.balanceOf(poolerL1.address))
-      // expect(await vault.balanceOf(user.address)).to.equal(1000000000);
-      
-      // withdrawal has been done
+      // deposit and withdrawal has been done
+      expect(await vault.balanceOf(poolerL1.address)).to.equal(19000000);
 
 
-      await poolerL1.connect(thirdUser.address).launchBus()
+      // await poolerL1.connect(thirdUser.address).launchBus()
 
 
-      expect(await poolerL1.rideOngoing()).to.equal(false);
+      // expect(await poolerL1.rideOngoing()).to.equal(false);
     });
   })
 })

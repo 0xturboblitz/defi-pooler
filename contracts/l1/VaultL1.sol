@@ -9,11 +9,9 @@ contract VaultL1 is ERC4626 {
         string memory name,
         string memory symbol,
         address underlying
-    ) ERC20(name, symbol) ERC4626(IERC20(underlying)) {
-        _mint(msg.sender, 100000000);
-    }
+    ) ERC20(name, symbol) ERC4626(IERC20(underlying)) {}
 
     function decimals() public pure override returns (uint8) {
-        return 8;
+        return 6;
     }
 }
