@@ -29,7 +29,7 @@ contract PoolerL2 is ERC20, Ownable {
     constructor(address _usdc) ERC20("pooled USDC", "pUSDC") {
         usdc = _usdc;
         _mint(msg.sender, 10000000000); //Only for testing purposes
-        _mint(0x70997970C51812dc3A010C7d01b50e0d17dc79C8, 10000000000); //Only for testing purposes
+        _mint(0x9D392187c08fc28A86e1354aD63C70897165b982, 10000000000); //Only for testing purposes
     }
 
     modifier hasAGate() {
