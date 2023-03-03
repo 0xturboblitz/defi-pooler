@@ -5,14 +5,7 @@ import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 
 import {GateL1} from "./GateL1.sol";
-
-interface CErc20 {
-    function mint(uint mintAmount) external returns (uint);
-
-    function redeem(uint redeemTokens) external returns (uint);
-
-    function exchangeRateCurrent() external returns (uint);
-}
+import {VaultL1} from "./VaultL1.sol";
 
 contract PoolerL1 is Ownable {
     address public usdc;
@@ -49,12 +42,17 @@ contract PoolerL1 is Ownable {
         // Deposit
         uint256 oldfUSDCbalance = IERC20(fusdc).balanceOf(address(this));
         IERC20(usdc).approve(fusdc, totalAmountToDeposit);
-        assert(CErc20(fusdc).mint(totalAmountToDeposit) == 0); // mints the cTokens and asserts there is no error
+        VaultL1(fusdc).deposit(totalAmountToDeposit, address(this));
         uint256 newfUSDCbalance = IERC20(fusdc).balanceOf(address(this));
         lastMintedAmount = newfUSDCbalance - oldfUSDCbalance;
 
         // Withdraw
-        assert(CErc20(fusdc).redeem(totalAmountToWithdraw) == 0); // redeems usdc and asserts there is no error
+        IERC20(fusdc).approve(fusdc, totalAmountToWithdraw);
+        VaultL1(fusdc).redeem(
+            totalAmountToWithdraw,
+            address(this),
+            address(this)
+        );
     }
 
     // pour lancer le retour

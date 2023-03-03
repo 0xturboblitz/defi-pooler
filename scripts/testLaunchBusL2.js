@@ -19,7 +19,7 @@ async function main() {
   console.log("Deposited 10 aUSDC to L2 pooler");
 
   await poolerL2.connect(driver).launchBus({
-    value: ethers.utils.parseEther("0.1")
+    value: ethers.utils.parseEther("0.3")
   });
 }
 
