@@ -39,7 +39,7 @@ contract GateL2 is IAxelarExecutable, Ownable {
         uint256 amountToDeposit,
         uint256 amountToWithraw
     ) external payable {
-        bytes memory payload = abi.encode(abi.encode(amountToWithraw));
+        bytes memory payload = abi.encode(amountToWithraw);
         IERC20(iTokenAddress).approve(address(gateway), amountToDeposit);
 
         // pay the gas to the bridge
