@@ -108,6 +108,9 @@ contract GateL1 is IAxelarExecutable {
         // get the amount to withdraw from the payload
         uint256 amountToWithdraw = abi.decode(payload, (uint256));
 
+        // transfer the tokens to the pooler
+        IERC20(iTokenAddress).transfer(pooler, amount);
+
         // call the pooler to invest the tokens
         PoolerL1(pooler).finalizeWarp(amountToWithdraw);
     }
