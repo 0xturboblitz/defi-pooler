@@ -80,4 +80,9 @@ contract PoolerL1 is Ownable {
     function setGateAddress(address _gateAddress) public onlyOwner {
         gateAddress = payable(_gateAddress);
     }
+
+    //function to set rideOngoing
+    function setRideOngoing(bool _rideOngoing) public onlyOwner {
+        rideOngoing = _rideOngoing;
+    }
 }

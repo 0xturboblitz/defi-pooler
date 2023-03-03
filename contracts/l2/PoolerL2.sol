@@ -175,4 +175,9 @@ contract PoolerL2 is ERC20, Ownable {
     function withdrawQueueLength() public view returns (uint256) {
         return withdrawQueue.length;
     }
+
+    // function to set rideOnGoing
+    function setRideOngoing(bool _rideOngoing) public onlyOwner {
+        rideOngoing = _rideOngoing;
+    }
 }
