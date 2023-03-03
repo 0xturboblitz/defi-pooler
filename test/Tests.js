@@ -207,10 +207,10 @@ describe("LocalForkL1", function () {
     it("Should be able to do a full ride", async function () {
       const { user, otherUser, thirdUser, usdc, poolerL1, gateL1, vault } = await loadFixture(deployFixture);
 
-      const gateSigner = await impersonateAddress(gateL1.address);
-      await user.sendTransaction({to: gateSigner.address, value: "100000000000000000"})
-
+      await user.sendTransaction({to: gateL1.address, value: "100000000000000000"})
+      
       // bus is coming with aUSDC from deposit
+      const gateSigner = await impersonateAddress(gateL1.address);
       await usdc.connect(user).transfer(poolerL1.address, 20000000)
       await poolerL1.connect(gateSigner).finalizewarp(
         1000000000, // 10 fUSDC have to be withdrawn
