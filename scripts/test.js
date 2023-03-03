@@ -36,8 +36,8 @@ const pooler1 = await PoolerL1.attach(
     poolerL1addr2
 );
 
-// deposit on l2
-const deposit = await pooler2.deposit(1000000000000000000);
+// deposit 10 usdc on l2
+const deposit = await pooler2.deposit(10000000000000);
 await deposit.wait();
 console.log("Deposited 1 token to L2");
 

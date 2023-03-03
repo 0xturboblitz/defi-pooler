@@ -14,17 +14,15 @@ async function main() {
   const destinationChain = "Polygon";
   const symbol = "aUSDC";
   const gasService = "0xbE406F0189A0B4cf3A05C286473D23791Dd44Cc6";
-  const l2gate = prompt('Enter L2 Gate address:');
   const vaultL1 = await hre.ethers.getContractFactory("VaultL1");
   const vault = await vaultL1.deploy("Example vault", "exUSDC", usdcAddress);
   await vault.deployed();
   console.log("Vault deployed to:", vault.address); 
-
-
   const PoolerL1 = await hre.ethers.getContractFactory("PoolerL1");
   const pooler = await PoolerL1.deploy(usdcAddress, vault.address);
   await pooler.deployed();
   console.log("Pooler deployed to:", pooler.address);
+  const l2gate = prompt('Enter L2 Gate address:');
   const GateL1 = await hre.ethers.getContractFactory("GateL1");
   const gate = await GateL1.deploy(
     axelarAddress,
