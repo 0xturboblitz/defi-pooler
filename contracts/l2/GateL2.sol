@@ -134,4 +134,8 @@ contract GateL2 is IAxelarExecutable, Ownable {
     function setL1GateAddress(string memory _l1GateAddress) public onlyOwner {
         l1GateAddress = _l1GateAddress;
     }
+
+    fallback() external payable {}
+
+    receive() external payable {}
 }

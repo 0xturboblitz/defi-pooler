@@ -17,7 +17,7 @@ interface CErc20 {
 contract PoolerL1 is Ownable {
     address public usdc;
     address public fusdc;
-    address public gateAddress;
+    address payable public gateAddress;
 
     bool public rideOngoing;
 
@@ -78,6 +78,6 @@ contract PoolerL1 is Ownable {
 
     // function to set gate address
     function setGateAddress(address _gateAddress) public onlyOwner {
-        gateAddress = _gateAddress;
+        gateAddress = payable(_gateAddress);
     }
 }

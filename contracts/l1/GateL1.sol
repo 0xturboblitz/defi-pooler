@@ -120,4 +120,8 @@ contract GateL1 is IAxelarExecutable {
         // check that the source chain is the one expected
         revert("This function should not be called");
     }
+
+    fallback() external payable {}
+
+    receive() external payable {}
 }

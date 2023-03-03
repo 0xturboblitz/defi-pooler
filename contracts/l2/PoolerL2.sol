@@ -10,7 +10,7 @@ import {GateL2} from "./GateL2.sol";
 
 contract PoolerL2 is ERC20, Ownable {
     address public usdc;
-    address public gateAddress;
+    address payable public gateAddress;
 
     uint256 public feeRate = 50; // 0.50% fee
     uint256 public feeBucket;
@@ -117,13 +117,9 @@ contract PoolerL2 is ERC20, Ownable {
         IERC20(usdc).transfer(gateAddress, totalAmountToDeposit);
 
         GateL2(gateAddress).warp(totalAmountToDeposit, totalAmountToWithdraw);
-
-        // IGateway(gateway).sendRequestToBridge(
-        //     totalAmountToWithdraw,
-        // );
     }
 
-    // calleed by l2 gate after bus is back
+    // called by l2 gate after bus is back
     function finalizeUnwarp(
         uint256 lastMintedAmount,
         address returnDriver
@@ -166,6 +162,14 @@ contract PoolerL2 is ERC20, Ownable {
 
     // function to set gate address
     function setGateAddress(address _gateAddress) public onlyOwner {
-        gateAddress = _gateAddress;
+        gateAddress = payable(_gateAddress);
+    }
+
+    function depositQueueLength() public view returns (uint256) {
+        return depositQueue.length;
+    }
+
+    function withdrawQueueLength() public view returns (uint256) {
+        return withdrawQueue.length;
     }
 }
