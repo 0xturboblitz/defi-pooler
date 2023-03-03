@@ -9,8 +9,8 @@ module.exports = {
     hardhat: {
       // chainId: CHAIN_IDS.hardhat,
       forking: {
-        // url: `https://rpc.ankr.com/polygon_mumbai`,
-        url: `https://rpc.ankr.com/eth_goerli`,
+        url: `https://rpc.ankr.com/polygon_mumbai`,
+        // url: `https://rpc.ankr.com/eth_goerli`,
       }
     },
     goerli: {
