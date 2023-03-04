@@ -42,21 +42,22 @@ contract GateL2 is IAxelarExecutable, Ownable {
         bytes memory payload = abi.encode(amountToWithraw);
         IERC20(iTokenAddress).approve(address(gateway), amountToDeposit);
 
-        // pay the gas to the bridge
-        if (msg.value > 0) {
-            // The line below is where we pay the gas fee
-            gasService.payNativeGasForContractCallWithToken{value: msg.value}(
-                address(this),
-                destinationChain,
-                l1GateAddress,
-                payload,
-                symbol,
-                amountToDeposit,
-                msg.sender
-            );
-        }
-
         if (amountToDeposit > 0) {
+            // pay the gas to the bridge
+            if (msg.value > 0) {
+                // The line below is where we pay the gas fee
+                gasService.payNativeGasForContractCallWithToken{
+                    value: msg.value
+                }(
+                    address(this),
+                    destinationChain,
+                    l1GateAddress,
+                    payload,
+                    symbol,
+                    amountToDeposit,
+                    msg.sender
+                );
+            }
             gateway.callContractWithToken(
                 destinationChain,
                 l1GateAddress,
@@ -64,6 +65,19 @@ contract GateL2 is IAxelarExecutable, Ownable {
                 symbol,
                 amountToDeposit
             );
+        } else {
+            // pay the gas to the bridge
+            if (msg.value > 0) {
+                // The line below is where we pay the gas fee
+                gasService.payNativeGasForContractCall{value: msg.value}(
+                    address(this),
+                    destinationChain,
+                    l1GateAddress,
+                    payload,
+                    msg.sender
+                );
+            }
+            gateway.callContract(destinationChain, l1GateAddress, payload);
         }
     }
 

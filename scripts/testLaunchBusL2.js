@@ -3,9 +3,9 @@ const prompt = require('prompt-sync')();
 
 async function main() {
   const depositor = new ethers.Wallet(process.env.PKEY, ethers.provider);
-  const withdrawer = new ethers.Wallet(process.env.PKEY2, ethers.provider);
+  const withdrawer = new ethers.Wallet(process.env.PKEY, ethers.provider);
 
-  const poolerL2addr = "0xC89d9A742F8f292fb4c3234acdDbB85C85dC966a"
+  const poolerL2addr = "0x619156daEd9f9F2e7C55050d84B3Aa0660e48545"
   const ausdcAddressL2 = "0x2c852e740B62308c46DD29B982FBb650D063Bd07";
 
   const ausdcL2 = await ethers.getContractAt("USDC", ausdcAddressL2)

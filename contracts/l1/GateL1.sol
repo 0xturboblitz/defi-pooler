@@ -47,24 +47,25 @@ contract GateL1 is IAxelarExecutable {
             lastUSDCAmountWithdrawn
         );
 
-        // pay the gas to the bridge
-        if (msg.value > 0) {
-            // The line below is where we pay the gas fee
-            gasService.payNativeGasForContractCallWithToken{value: msg.value}(
-                address(this),
-                destinationChain,
-                l2GateAddress,
-                payload,
-                symbol,
-                lastUSDCAmountWithdrawn,
-                msg.sender
-            );
-        }
-
         // au choix: envoyer le montant de tokens manuellement ou
         // envoyer le montant de tokens qui sont dans la gate
         // IAxelarGateway(axelarGateway).callContractWithToken(destinationChain, l1GateAddress, payload, symbol, getITokensToInvest());
         if (lastUSDCAmountWithdrawn > 0) {
+            // pay the gas to the bridge
+            if (msg.value > 0) {
+                // The line below is where we pay the gas fee
+                gasService.payNativeGasForContractCallWithToken{
+                    value: msg.value
+                }(
+                    address(this),
+                    destinationChain,
+                    l2GateAddress,
+                    payload,
+                    symbol,
+                    lastUSDCAmountWithdrawn,
+                    msg.sender
+                );
+            }
             gateway.callContractWithToken(
                 destinationChain,
                 l2GateAddress,
@@ -72,6 +73,19 @@ contract GateL1 is IAxelarExecutable {
                 symbol,
                 lastUSDCAmountWithdrawn
             );
+        } else {
+            // pay the gas to the bridge
+            if (msg.value > 0) {
+                // The line below is where we pay the gas fee
+                gasService.payNativeGasForContractCall{value: msg.value}(
+                    address(this),
+                    destinationChain,
+                    l2GateAddress,
+                    payload,
+                    msg.sender
+                );
+            }
+            gateway.callContract(destinationChain, l2GateAddress, payload);
         }
     }
 
