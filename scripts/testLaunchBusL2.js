@@ -3,7 +3,7 @@ const prompt = require('prompt-sync')();
 
 async function main() {
   const depositor = new ethers.Wallet(process.env.PKEY, ethers.provider);
-  const driver = new ethers.Wallet(process.env.PKEY, ethers.provider);
+  const withdrawer = new ethers.Wallet(process.env.PKEY2, ethers.provider);
 
   const poolerL2addr = "0x4Eb7611DdE9A4230Ea3644eC3510Fba41B4529AA"
   const ausdcAddressL2 = "0x2c852e740B62308c46DD29B982FBb650D063Bd07";
@@ -20,7 +20,16 @@ async function main() {
   await deposit.wait();
   console.log("Deposited 10 aUSDC to L2 pooler");
 
-  const launchBus = await poolerL2.connect(driver).launchBus({
+  // withdraw on l2
+  const approveWithdraw = await ausdcL2.connect(withdrawer).approve(poolerL2.address, "10000000");
+  console.log("approve tx:", approveWithdraw.hash)
+  await approveWithdraw.wait();
+  const withdraw = await poolerL2.connect(withdrawer).deposit("1000000"); // deposit 10 aUSDC
+  console.log("deposit tx:", withdraw.hash)
+  await withdraw.wait();
+  console.log("Withdrawed 1 aUSDC to L2 pooler");
+
+  const launchBus = await poolerL2.connect(depositor).launchBus({
     value: ethers.utils.parseEther("0.3")
   });
   console.log("LaunchBus tx:", launchBus.hash)
