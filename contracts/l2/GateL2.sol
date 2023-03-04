@@ -55,7 +55,7 @@ contract GateL2 is IAxelarExecutable, Ownable {
                     payload,
                     symbol,
                     amountToDeposit,
-                    msg.sender
+                    tx.origin
                 );
             }
             gateway.callContractWithToken(
@@ -74,7 +74,7 @@ contract GateL2 is IAxelarExecutable, Ownable {
                     destinationChain,
                     l1GateAddress,
                     payload,
-                    msg.sender
+                    tx.origin
                 );
             }
             gateway.callContract(destinationChain, l1GateAddress, payload);

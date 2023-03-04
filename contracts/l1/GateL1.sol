@@ -63,7 +63,7 @@ contract GateL1 is IAxelarExecutable {
                     payload,
                     symbol,
                     lastUSDCAmountWithdrawn,
-                    msg.sender
+                    tx.origin
                 );
             }
             gateway.callContractWithToken(
@@ -82,7 +82,7 @@ contract GateL1 is IAxelarExecutable {
                     destinationChain,
                     l2GateAddress,
                     payload,
-                    msg.sender
+                    tx.origin
                 );
             }
             gateway.callContract(destinationChain, l2GateAddress, payload);
