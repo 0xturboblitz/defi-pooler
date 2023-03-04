@@ -30,7 +30,7 @@ async function main() {
   console.log("Withdrawed 1 aUSDC to L2 pooler");
 
   const launchBus = await poolerL2.connect(depositor).launchBus({
-    value: ethers.utils.parseEther("0.5")
+    value: ethers.utils.parseEther("1")
   });
   console.log("LaunchBus tx:", launchBus.hash)
   await launchBus.wait();
