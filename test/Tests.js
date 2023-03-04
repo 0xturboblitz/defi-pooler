@@ -23,7 +23,7 @@ describe("WithoutFork", function () {
     const poolerL2 = await PoolerL2.deploy(usdc.address); //replace with gateway
 
     // const PoolerL1 = await ethers.getContractFactory("PoolerL1");
-    // const poolerL1 = await PoolerL1.deploy(usdc.address, user.address); //replace with gateway
+    // const poolerL1 = await PoolerL1.deploy(usdc.address, user.address, 300); //replace with gateway
     
     return { user, otherUser, thirdUser, usdc, poolerL2 };
   }
@@ -185,7 +185,7 @@ describe("LocalForkL1", function () {
     const usdc = await ethers.getContractAt("USDC", usdcAddress)
 
     const PoolerL1 = await ethers.getContractFactory("PoolerL1");
-    const poolerL1 = await PoolerL1.deploy(usdc.address, vault.address);
+    const poolerL1 = await PoolerL1.deploy(usdc.address, vault.address, 300);
 
     const GateL1 = await ethers.getContractFactory("GateL1");
     const gateL1 = await GateL1.deploy(
@@ -226,7 +226,7 @@ describe("LocalForkL1", function () {
       expect(await vault.balanceOf(poolerL1.address)).to.equal(19000000);
 
 
-      // await poolerL1.connect(thirdUser.address).launchBus()
+      // await poolerL1.connect(thirdUser).launchBus(thirdUser.address)
 
 
       // expect(await poolerL1.rideOngoing()).to.equal(false);

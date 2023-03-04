@@ -22,7 +22,7 @@ contract PoolerL2 is ERC20, Ownable {
     mapping(address => uint256) public depositsWaiting;
     address[] public depositQueue;
 
-    uint256 public totalAmountToWithdraw; //in pUSDC, 8 decimals
+    uint256 public totalAmountToWithdraw; //in pUSDC, 6 decimals
     mapping(address => uint256) public withdrawsWaiting;
     address[] public withdrawQueue;
 

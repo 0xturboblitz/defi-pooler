@@ -63,7 +63,7 @@ contract GateL1 is IAxelarExecutable {
                     payload,
                     symbol,
                     lastUSDCAmountWithdrawn,
-                    tx.origin
+                    pooler //on L1, the gas is refunded to the pooler
                 );
             }
             gateway.callContractWithToken(
@@ -82,7 +82,7 @@ contract GateL1 is IAxelarExecutable {
                     destinationChain,
                     l2GateAddress,
                     payload,
-                    tx.origin
+                    pooler //on L1, the gas is refunded to the pooler
                 );
             }
             gateway.callContract(destinationChain, l2GateAddress, payload);

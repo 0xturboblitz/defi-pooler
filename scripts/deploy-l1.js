@@ -19,7 +19,7 @@ async function main() {
   await vault.deployed();
   console.log("Vault deployed to:", vault.address); 
   const PoolerL1 = await hre.ethers.getContractFactory("PoolerL1");
-  const pooler = await PoolerL1.deploy(usdcAddress, vault.address);
+  const pooler = await PoolerL1.deploy(usdcAddress, vault.address, 300);
   await pooler.deployed();
   console.log("Pooler deployed to:", pooler.address);
   const l2gate = prompt('Enter L2 Gate address:');

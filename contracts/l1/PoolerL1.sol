@@ -4,21 +4,25 @@ pragma solidity ^0.8.9;
 import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 
+import {AutomationCompatibleInterface} from "@chainlink/contracts/src/v0.8/AutomationCompatible.sol";
 import {GateL1} from "./GateL1.sol";
 import {VaultL1} from "./VaultL1.sol";
 
-contract PoolerL1 is Ownable {
+contract PoolerL1 is Ownable, AutomationCompatibleInterface {
     address public usdc;
     address public fusdc;
     address payable public gateAddress;
 
     bool public rideOngoing;
+    uint256 public rideArrivedTimestamp;
+    uint256 public upKeepInterval;
 
     uint256 public lastMintedAmount;
 
-    constructor(address _usdc, address _fusdc) {
+    constructor(address _usdc, address _fusdc, uint256 _upKeepInterval) {
         usdc = _usdc;
         fusdc = _fusdc;
+        upKeepInterval = _upKeepInterval; // 300 for 5 minutes
     }
 
     modifier notDuringRide() {
@@ -37,6 +41,7 @@ contract PoolerL1 is Ownable {
             "Only gateway can call this function"
         );
         rideOngoing = true;
+        rideArrivedTimestamp = block.timestamp;
 
         uint256 totalAmountToDeposit = IERC20(usdc).balanceOf(address(this));
         // Deposit
@@ -60,18 +65,17 @@ contract PoolerL1 is Ownable {
     // pour lancer le retour
     // call la gate l1
     // lastExchange rate et amount withdrawn
-    function launchBus() public payable hasAGate {
+    function launchBus(address _driverAddress) public payable hasAGate {
         require(rideOngoing == true, "No ride in progress");
 
         uint256 lastUSDCAmountWithdrawn = IERC20(usdc).balanceOf(address(this));
-        address driver = msg.sender;
 
         IERC20(usdc).transfer(gateAddress, lastUSDCAmountWithdrawn);
 
-        GateL1(gateAddress).unWarp{value: msg.value}(
+        GateL1(gateAddress).unWarp{value: address(this).balance}(
             lastMintedAmount,
             lastUSDCAmountWithdrawn,
-            driver
+            _driverAddress
         );
         rideOngoing = false;
     }
@@ -84,5 +88,27 @@ contract PoolerL1 is Ownable {
     //function to set rideOngoing
     function setRideOngoing(bool _rideOngoing) public onlyOwner {
         rideOngoing = _rideOngoing;
+    }
+
+    function checkUpkeep(
+        bytes calldata
+    )
+        external
+        view
+        override
+        returns (bool upkeepNeeded, bytes memory performData)
+    {
+        upkeepNeeded =
+            rideOngoing &&
+            (block.timestamp - rideArrivedTimestamp) > upKeepInterval;
+    }
+
+    function performUpkeep(bytes calldata) external override {
+        if (
+            rideOngoing &&
+            (block.timestamp - rideArrivedTimestamp) > upKeepInterval
+        ) {
+            launchBus(owner()); // when Chainlink relayer calls, driver fee comes back to us
+        }
     }
 }
