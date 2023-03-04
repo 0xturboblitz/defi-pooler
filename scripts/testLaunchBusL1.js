@@ -9,7 +9,7 @@ async function main() {
 
   // 10 USDC have to have been deposited already on L1
   const launchBus = await poolerL1.connect(depositor).launchBus({
-    value: ethers.utils.parseEther("0.3")
+    value: ethers.utils.parseEther("0.1")
   });
   console.log("LaunchBus tx:", launchBus.hash)
   await launchBus.wait();

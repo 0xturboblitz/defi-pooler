@@ -39,10 +39,6 @@ async function main() {
   const updatePooler = await pooler.setGateAddress(gate.address);
   await updatePooler.wait();
   console.log("Pooler updated with Gate address");
-
-  
-  
-
 }
 
 // We recommend this pattern to be able to use async/await everywhere

@@ -18,7 +18,7 @@ module.exports = {
       accounts: [process.env.PKEY]
     },
     mumbai: {
-      url: "https://rpc.ankr.com/polygon_mumbai",
+      url: "https://polygon-testnet.public.blastapi.io",
       accounts: [process.env.PKEY]
     }
   }

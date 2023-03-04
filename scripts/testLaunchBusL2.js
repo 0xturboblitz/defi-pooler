@@ -25,12 +25,12 @@ async function main() {
   console.log("approve tx:", approveWithdraw.hash)
   await approveWithdraw.wait();
   const withdraw = await poolerL2.connect(withdrawer).withdraw("1000000"); // deposit 10 aUSDC
-  console.log("deposit tx:", withdraw.hash)
+  console.log("withdraw tx:", withdraw.hash)
   await withdraw.wait();
   console.log("Withdrawed 1 aUSDC to L2 pooler");
 
   const launchBus = await poolerL2.connect(depositor).launchBus({
-    value: ethers.utils.parseEther("0.4")
+    value: ethers.utils.parseEther("0.45")
   });
   console.log("LaunchBus tx:", launchBus.hash)
   await launchBus.wait();
