@@ -4,7 +4,7 @@ const prompt = require('prompt-sync')();
 async function main() {
   const depositor = new ethers.Wallet(process.env.PKEY, ethers.provider);
 
-  const poolerL1addr = "0x34d472cC7b6D3eE53f2eded339C61e284Cb9B1C1";
+  const poolerL1addr = "0xDe7d1615307b4AC492B53753CF4FCDB119aB77A0";
   const poolerL1 = await ethers.getContractAt("PoolerL1", poolerL1addr);
 
   // 10 USDC have to have been deposited already on L1
