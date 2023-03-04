@@ -5,7 +5,7 @@ async function main() {
   const depositor = new ethers.Wallet(process.env.PKEY, ethers.provider);
   const withdrawer = new ethers.Wallet(process.env.PKEY, ethers.provider);
 
-  const poolerL2addr = "0x34596Aae4262488a795E571d4AcEfbbE4ca6b328"
+  const poolerL2addr = "0xDf004020f283B46C40EE67917D8E9468c5C652e4"
   const ausdcAddressL2 = "0x2c852e740B62308c46DD29B982FBb650D063Bd07";
 
   const ausdcL2 = await ethers.getContractAt("USDC", ausdcAddressL2)
@@ -30,7 +30,7 @@ async function main() {
   console.log("Withdrawed 1 aUSDC to L2 pooler");
 
   const launchBus = await poolerL2.connect(depositor).launchBus({
-    value: ethers.utils.parseEther("1")
+    value: ethers.utils.parseEther("0.4")
   });
   console.log("LaunchBus tx:", launchBus.hash)
   await launchBus.wait();
