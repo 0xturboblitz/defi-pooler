@@ -64,13 +64,15 @@ contract GateL1 is IAxelarExecutable {
         // au choix: envoyer le montant de tokens manuellement ou
         // envoyer le montant de tokens qui sont dans la gate
         // IAxelarGateway(axelarGateway).callContractWithToken(destinationChain, l1GateAddress, payload, symbol, getITokensToInvest());
-        gateway.callContractWithToken(
-            destinationChain,
-            l2GateAddress,
-            payload,
-            symbol,
-            lastUSDCAmountWithdrawn
-        );
+        if (lastUSDCAmountWithdrawn > 0) {
+            gateway.callContractWithToken(
+                destinationChain,
+                l2GateAddress,
+                payload,
+                symbol,
+                lastUSDCAmountWithdrawn
+            );
+        }
     }
 
     // implement functions from IAxelarExecutable

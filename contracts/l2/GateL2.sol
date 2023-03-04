@@ -56,13 +56,15 @@ contract GateL2 is IAxelarExecutable, Ownable {
             );
         }
 
-        gateway.callContractWithToken(
-            destinationChain,
-            l1GateAddress,
-            payload,
-            symbol,
-            amountToDeposit
-        );
+        if (amountToDeposit > 0) {
+            gateway.callContractWithToken(
+                destinationChain,
+                l1GateAddress,
+                payload,
+                symbol,
+                amountToDeposit
+            );
+        }
     }
 
     function _executeWithToken(
