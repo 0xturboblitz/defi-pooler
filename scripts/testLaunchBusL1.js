@@ -2,14 +2,11 @@ const hre = require("hardhat");
 const prompt = require('prompt-sync')();
 
 async function main() {
-  const depositor = new ethers.Wallet(process.env.PKEY, ethers.provider);
-  const driver = new ethers.Wallet(process.env.PKEY2, ethers.provider);
+  const driver = new ethers.Wallet(process.env.PKEY, ethers.provider);
 
-  const gateL2addr = "0xc62BdB14Fe2f315e4E4DdDa7ca89E600371eaB64"
-  const poolerL2addr = "0x550E0B9dd93d8DB3e64e9EEd79e5Df0Fd43F62da"
 
-  const gateL1addr = "0x2D931091D2c9fC0e6Bf6494847607f839B9a2d7A";
-  const poolerL1addr = "0x9b0CDb0251bfD79694A13efF2EF4AaDB2705d5f8";
+  const gateL1addr = "0x6f0772c30E606886498ED5dC039071096431A2E7";
+  const poolerL1addr = "0x1C0E5B1D73d07b45008D0BF1EE7a9C7203cb4233";
   const fusdcAddressL1 = "0xff369555331c7A1B5E0a59BF6A51BADde7416cB6";
 
   const ausdcL1 = await ethers.getContractAt("USDC", fusdcAddressL1)

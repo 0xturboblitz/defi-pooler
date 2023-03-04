@@ -5,7 +5,7 @@ async function main() {
   const depositor = new ethers.Wallet(process.env.PKEY, ethers.provider);
   const driver = new ethers.Wallet(process.env.PKEY, ethers.provider);
 
-  const poolerL2addr = "0x4Eb7611DdE9A4230Ea3644eC3510Fba41B4529AA"
+  const poolerL2addr = "0x70a4EF8cCe1F0ee90c751EEEaDf286c878634742"
   const ausdcAddressL2 = "0x2c852e740B62308c46DD29B982FBb650D063Bd07";
 
   const ausdcL2 = await ethers.getContractAt("USDC", ausdcAddressL2)
