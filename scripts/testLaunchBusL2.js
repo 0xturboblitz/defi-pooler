@@ -24,7 +24,7 @@ async function main() {
   const approveWithdraw = await ausdcL2.connect(withdrawer).approve(poolerL2.address, "10000000");
   console.log("approve tx:", approveWithdraw.hash)
   await approveWithdraw.wait();
-  const withdraw = await poolerL2.connect(withdrawer).deposit("1000000"); // deposit 10 aUSDC
+  const withdraw = await poolerL2.connect(withdrawer).withdraw("1000000"); // deposit 10 aUSDC
   console.log("deposit tx:", withdraw.hash)
   await withdraw.wait();
   console.log("Withdrawed 1 aUSDC to L2 pooler");
