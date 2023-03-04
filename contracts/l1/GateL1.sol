@@ -137,7 +137,24 @@ contract GateL1 is IAxelarExecutable {
         bytes calldata payload
     ) internal override {
         // check that the source chain is the one expected
-        revert("This function should not be called");
+        require(
+            keccak256(abi.encodePacked(destinationChain)) ==
+                keccak256(abi.encodePacked(sourceChain)),
+            "Source chain does not match"
+        );
+
+        // check that the source address is gatel2 address
+        require(
+            keccak256(abi.encodePacked(sourceAddress)) ==
+                keccak256(abi.encodePacked(l2GateAddress)),
+            "Source address does not match"
+        );
+
+        // get the amount to withdraw from the payload
+        uint256 amountToWithdraw = abi.decode(payload, (uint256));
+
+        // call the pooler to invest the tokens
+        PoolerL1(pooler).finalizeWarp(amountToWithdraw);
     }
 
     fallback() external payable {}

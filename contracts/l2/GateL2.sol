@@ -136,7 +136,28 @@ contract GateL2 is IAxelarExecutable, Ownable {
         string memory sourceAddress,
         bytes calldata payload
     ) internal override {
-        revert("This function should not be called");
+        // check that the source address is the l1GateAddress
+        require(
+            keccak256(abi.encodePacked(sourceAddress)) ==
+                keccak256(abi.encodePacked(l1GateAddress)),
+            "Source address does not match"
+        );
+
+        //check that the source chain is the one expected
+        require(
+            keccak256(abi.encodePacked(destinationChain)) ==
+                keccak256(abi.encodePacked(sourceChain)),
+            "Source chain does not match"
+        );
+
+        //get lastMintedAmount and driver from payload
+        (uint256 lastMintedAmount, address driver) = abi.decode(
+            payload,
+            (uint256, address)
+        );
+
+        // call pooler to finalizw the unwarp
+        PoolerL2(pooler).finalizeUnwarp(lastMintedAmount, driver);
     }
 
     // function to get the iToken balance of the gate
